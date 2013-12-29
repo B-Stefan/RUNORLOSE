@@ -1,0 +1,7 @@
+{
+  "name": "RUN OR LOSE - WS13/14 @ HS-Bremen",
+  "version": "0.1",
+  "dependencies": {
+    "jquery": "1.9.1"
+  }
+}

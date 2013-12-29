@@ -1,0 +1,105 @@
+{
+  "shims": {
+    "/javascripts/app/main.js": {
+      "parse": {
+        "exports": "Parse"
+      },
+      "jquery-popup": {
+        "deps": [
+          "jquery",
+          "css!../vendor/jquery.popup/css/popup.css"
+        ]
+      },
+      "pusher": {
+        "exports": "Pusher"
+      }
+    }
+  },
+  "deps": {
+    "/javascripts/app/baseClasses/RealTimeCommunicationChannel.js": [
+      "require",
+      "pusher",
+      "jquery"
+    ],
+    "/javascripts/app/baseClasses/UtilsAppfurnace.js": [
+      "jquery"
+    ],
+    "/javascripts/app/gameplay/Game.js": [
+      "require",
+      "baseClasses/RealTimeCommunicationChannel",
+      "jquery-popup",
+      "jquery",
+      "gameplay/Gamefield",
+      "baseClasses/UtilsAppfurnace",
+      "moment",
+      "gameplay/Joker"
+    ],
+    "/javascripts/app/gameplay/Gamefield.js": [
+      "require",
+      "baseClasses/RealTimeCommunicationChannel",
+      "jquery-popup",
+      "jquery",
+      "baseClasses/UtilsAppfurnace"
+    ],
+    "/javascripts/app/gameplay/Joker.js": [
+      "jquery",
+      "baseClasses/UtilsAppfurnace"
+    ],
+    "/javascripts/app/main.js": [
+      "require",
+      "gameplay/Game",
+      "baseClasses/RealTimeCommunicationChannel",
+      "jquery-popup",
+      "jquery"
+    ]
+  },
+  "aliases": {
+    "/javascripts/app/main.js": {
+      "text": "../vendor/requirejs-text/text",
+      "jquery": "../vendor/jquery/jquery",
+      "parse": "../vendor/parse/parse-1.2.12",
+      "pusher": "../vendor/pusher/2.1-pusher.min",
+      "jquery-popup": "../vendor/jquery.popup/js/jquery.popup",
+      "css": "../vendor/require-css/css",
+      "css-builder": "../vendor/require-css/css-builder",
+      "normalize": "../vendor/require-css/normalize",
+      "moment": "../vendor/moment/moment"
+    }
+  },
+  "mappings": {
+    "/javascripts/app/main.js": null
+  },
+  "packages": {
+    "/javascripts/app/main.js": null
+  },
+  "originalConfig": {
+    "shim": {
+      "parse": {
+        "exports": "Parse"
+      },
+      "jquery-popup": {
+        "deps": [
+          "jquery",
+          "css!../vendor/jquery.popup/css/popup.css"
+        ]
+      },
+      "pusher": {
+        "exports": "Pusher"
+      }
+    },
+    "paths": {
+      "text": "../vendor/requirejs-text/text",
+      "jquery": "../vendor/jquery/jquery",
+      "parse": "../vendor/parse/parse-1.2.12",
+      "pusher": "../vendor/pusher/2.1-pusher.min",
+      "jquery-popup": "../vendor/jquery.popup/js/jquery.popup",
+      "css": "../vendor/require-css/css",
+      "css-builder": "../vendor/require-css/css-builder",
+      "normalize": "../vendor/require-css/normalize",
+      "moment": "../vendor/moment/moment"
+    }
+  },
+  "requireFiles": [
+    "/javascripts/app/main.js"
+  ]
+}
