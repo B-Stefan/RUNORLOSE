@@ -14,10 +14,9 @@ This repository contains a simple run game based on appfurnace platform
  3. Create your application on the Appfurance Website
  4. Go to the "Code" tab in you application and overwrite all with the following code
  5. Choose your configuration
+
 ```javascript
-
-
-/*Debug Configuration - BEGIN */
+    /*Debug Configuration - BEGIN */
     (function(){
       var t=document.createElement("script");
       t.src="http://localhost:3000/javascripts/vendor/requirejs/require.js";
@@ -41,7 +40,6 @@ This repository contains a simple run game based on appfurnace platform
       t.onload=function(){};
       $("body").append(t);
     })();
-
 
     */
 ```
