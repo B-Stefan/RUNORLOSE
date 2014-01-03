@@ -50,6 +50,3 @@ This repository contains a simple run game based on appfurnace platform
  3. Upload your public/app/main-built.js and maybe some other Data
  4. Change your configuration
  See the [Mimosa](http://mimosajs.com/) project for details on how to customize the solution and use other features.
-
-##Known issues
- * `LOCAL BUILD Configuration` dont work, because the `baseUrl` in the main.js is wrong.
