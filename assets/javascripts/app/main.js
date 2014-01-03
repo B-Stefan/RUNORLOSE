@@ -31,7 +31,6 @@ requirejs.config({
         }
     }
 });
-
 /**
  * @module main
  * @desc called by appfurnace to start the application. Do some init stuff
@@ -41,7 +40,7 @@ define(['require',
     'baseClasses/RealTimeCommunicationChannel',
     'jquery-popup', 'jquery'], function (require, Game, RealTimeCommunicationChannel, unused, $) {
 
-    navigate.to("Karte1")
+
 
 
 });
