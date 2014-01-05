@@ -35,13 +35,17 @@ define ['require', 'baseClasses/RealTimeCommunicationChannel'
       #@desc: The round index for this game
       @round  = 1
 
-
       #@private
       #@type <af.GeoFeature>Array()
       #@desc: Contains all points for this gamefield
       @points = af.geoFeatures.getFeatures()
 
       @pointsDisplayed = Array()
+
+      #@type int
+      #@desc: The round index for this game
+      @numberOfPointsOnGamefield  = @getMaxRoundId()
+      console.log("@numberOfPointsOnGamefield"+@numberOfPointsOnGamefield)
 
       #remove zone from list
       ###
@@ -58,6 +62,19 @@ define ['require', 'baseClasses/RealTimeCommunicationChannel'
     #@desc: Returns the payment in coins
     getCoinPayments: ()=>
       return 50
+
+    #@method
+    #@desc: Retuns the round id form the last point
+    #@retuns: {int} last round index
+    getMaxRoundId: ()=>
+      test = true
+      virtualRoundIndex = @round
+      while test
+        @getPointByName("P"+virtualRoundIndex+".1", ()->
+            test=false ##exit loop if point not found
+        )
+        virtualRoundIndex += 1
+      return virtualRoundIndex - 1
 
     #@desc: Get the point type by a complete string
     getPointTypeName: (string) =>
@@ -121,8 +138,12 @@ define ['require', 'baseClasses/RealTimeCommunicationChannel'
 
     #@method
     #@param: {string} name: The public name of the point
-    #@returns {af.GeoFeature} point
-    getPointByName: (name)=>
+    #@param: {function} exeptionHandler: Handle the not found exepetion for the point
+    #@returns {af.GeoFeature} point,
+    getPointByName: (name, exeptionHandler)=>
+      #Set default handle r
+      exeptionHandler = exeptionHandler ? (name)-> throw new Error("We cant find the point with the name: "+name )
+
       name = name.toLowerCase()
       for point in @points
         pointName = point.getName()
@@ -131,12 +152,18 @@ define ['require', 'baseClasses/RealTimeCommunicationChannel'
         if pointName == name
           return point
 
-      throw new Error("We cant find the point with the name: "+name )
+      exeptionHandler(name)
+
+
 
     #@method
     #@returns {<af.GeoFeature>Array} Array of the next 2 points
     #@desc: Increment the round and returns the next 2 points
     getNextPoints: ()=>
+      #Start over when all points allready played
+      if @numberOfPointsOnGamefield == @round
+        @round = 1
+
       arr = [@getPointByName("P"+@round+".1"),@getPointByName("P"+@round+".2")]
       @round +=1
       return arr
