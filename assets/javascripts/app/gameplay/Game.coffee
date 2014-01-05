@@ -114,13 +114,30 @@ define ['require',
     #@retuns {jQuery.Promise}
     showPopupContent: ($el) =>
       #Cover the old views
+      self = @
       if @$popup.children().length > 0
         UtilsAppfurnace.storePage(@$popup.children().first())
 
       @$popup.html($el)#Replace conent
       dfr = jQuery.Deferred()
       $popup = @$popup #Convert to local var
-      @$popup.data('popup').o.afterOpen = ()-> dfr.resolve($("body").find(".popup_cont").first())
+      @$popup.data('popup').o.afterOpen = ()->
+        $popContent = $("body").find(".popup_cont").first()
+        dfr.resolve($popContent)
+        $btn = UtilsAppfurnace.getUIElementByName('ui.btn.Close',$popContent)#Use the popup content to search
+        if $btn.length == 0
+          $btn = UtilsAppfurnace.getUIElementByName('ui.btn.Close1',$popContent)
+        if $btn.length == 0
+          $btn = UtilsAppfurnace.getUIElementByName('ui.btn.Close2',$popContent)
+        if $btn.length == 0
+          $btn = UtilsAppfurnace.getUIElementByName('ui.btn.Close3',$popContent)
+        if $btn.length == 0
+          $btn = UtilsAppfurnace.getUIElementByName('ui.btn.Close4',$popContent)
+        if $btn.length == 0
+          $btn = UtilsAppfurnace.getUIElementByName('ui.btn.Close5',$popContent)
+        $btn.click(()->
+          self.$popup.data('popup').close(@$popup)
+        )
       @$popup.data('popup').o.afterClose = ()->
         if $popup.children().length > 0
           UtilsAppfurnace.storePage($popup.children().first())
