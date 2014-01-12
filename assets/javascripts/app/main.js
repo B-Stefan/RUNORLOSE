@@ -13,7 +13,8 @@ requirejs.config({
         'css': '../vendor/require-css/css',
         'css-builder': '../vendor/require-css/css-builder',
         'normalize': '../vendor/require-css/normalize',
-        'moment': '../vendor/moment/moment'
+        'moment': '../vendor/moment/moment',
+        'flipclock': '../vendor/flipclock/js/flipclock.min'
     },
     shim: {
         'parse': {
@@ -28,6 +29,9 @@ requirejs.config({
         },
         'pusher': {
             exports: 'Pusher'
+        },
+        'flipclock': {
+            deps: ['css!../vendor/flipclock/css/flipclock.css']
         }
     }
 });
@@ -40,6 +44,14 @@ define(['require',
     'baseClasses/RealTimeCommunicationChannel',
     'jquery-popup', 'jquery'], function (require, Game, RealTimeCommunicationChannel, unused, $) {
 
+
+    //Bind click funtions to class 
+    ui.map.karte1.showFunction(Game.onMapClick)
+    ui.map.karte2.showFunction(Game.onMapClick)
+
+    //>>excludeStart("build", true);
+    navigate.to("Karte1")
+    //>>excludeEnd("build");
 
 
 
