@@ -1,6 +1,6 @@
 define ['jquery'], ($)->
   #Returns a static complte Static class
-  class
+  class UtilsAppfurnance
     #@param {string} pageName the public name of the page
     #@des Find the dom element and remove some internal classes
     #@retuns {jQuery.element|$} The page dom object for the pageName
@@ -27,4 +27,3 @@ define ['jquery'], ($)->
     #@retuns {jQuery.element|$} The UI-element
     @getUIElementByName: (uiName, $el)->
       return $el.find("[data-var='"+uiName+"']").first()
-

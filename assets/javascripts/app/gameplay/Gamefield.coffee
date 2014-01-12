@@ -61,7 +61,7 @@ define ['require', 'baseClasses/RealTimeCommunicationChannel'
     #@mehtod
     #@desc: Returns the payment in coins
     getCoinPayments: ()=>
-      return 50
+      return 2
 
     #@method
     #@desc: Retuns the round id form the last point

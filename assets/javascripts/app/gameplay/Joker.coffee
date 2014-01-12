@@ -15,6 +15,20 @@ define ['jquery',
       STEAL_COINS: 'content/images/MuenzWechsel.png'
       STEAL_TIME: 'content/images/MINUSZeit.png'
 
+    #@event
+    #@desct fires when an other team apply the joker
+    @onJokerSTEAL_TIME: (game,gamefield)->
+      game.setRemainingTime(game.getRemainingTime()*0.9) #10 percent less
+
+    #@event
+    #@desct fires when an other team apply the joker
+    @onJokerSTEAL_COINS: (game,gamefield)->
+      facator = 0.9
+      game.setCoins(game.getCoins()*facator) #10 percent less
+      game.showPopupContent(UtilsAppfurnance.getPage("joker.STEAL_COINS.applyInfo")).done ($cont)->
+        UtilsAppfurnance.getUIElementByName("label.howMany",$cont).html(game.getCoins()* 1 + (1-facator))
+
+
     #@method
     #@param: {Joker.jokerType} jokerType
     @getImageNode:(jokerType, options = {width: 21,height:21})->
@@ -69,7 +83,11 @@ define ['jquery',
 
     #@method
     #@public
-    applyEffekt: ()=> throw new Error("Not implemented yet :( ")
+    applyEffekt: (game)=>
+      game.channel.channel.trigger('client-joker-'+ @type, {joker: @})
+      game.showPopupContent(UtilsAppfurnace.getPage("Popup.JokerApplied"))
+
+
     #@method
     #@public
     #@retun {Joker.jokerType} type
