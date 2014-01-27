@@ -1,12 +1,14 @@
 define ['jquery',
+        'moment',
         'baseClasses/UtilsAppfurnace'],
-($,UtilsAppfurnace)->
+($,moment,UtilsAppfurnace)->
   class Joker
     #@static
     #@type: enum
     @jokerTypes:
       STEAL_COINS: 'STEAL_COINS'
       STEAL_TIME: 'STEAL_TIME'
+      COIN_MULTI: 'COIN_MULTI'
 
     #@static
     #@type: enum
@@ -14,24 +16,54 @@ define ['jquery',
     @jokerImages:
       STEAL_COINS: 'content/images/MuenzWechsel.png'
       STEAL_TIME: 'content/images/MINUSZeit.png'
+      COIN_MULTI: 'content/images/riegelx2.png'
+
+    #@staic
+    #@desc: Detect joker type and fire the spesific event. Binding in the Game.class
+    @onJokerEventTrigger: (game,data = {})=>
+      if not data.type
+        throw new Error("No type pased")
+        return
+      else if not @jokerTypes[data.type]
+        throw nre Error ("No valid type" + data.type)
+        return
+      Joker["onJoker"+data.type](game,game.gamefield)
+
 
     #@event
     #@desct fires when an other team apply the joker
     @onJokerSTEAL_TIME: (game,gamefield)->
-      game.setRemainingTime(game.getRemainingTime()*0.9) #10 percent less
+      facator = 0.9
+      delta = Math.floor(game.getRemainingTime()*facator)
+      game.setRemainingTime(delta) #10 percent less
+      game.showPopupContent(UtilsAppfurnace.getPage("joker.STEAL_Time.applyInfo")).done ($cont)->
+        UtilsAppfurnace.getUIElementByName("ui.label.howManyTime",$cont).html(moment(delta).format("mm:ss"))
+
 
     #@event
     #@desct fires when an other team apply the joker
     @onJokerSTEAL_COINS: (game,gamefield)->
+      console.log("onJokerSTEAL_COINS")
       facator = 0.9
-      game.setCoins(game.getCoins()*facator) #10 percent less
-      game.showPopupContent(UtilsAppfurnance.getPage("joker.STEAL_COINS.applyInfo")).done ($cont)->
-        UtilsAppfurnance.getUIElementByName("label.howMany",$cont).html(game.getCoins()* 1 + (1-facator))
+      delta = game.getCoins()*facator
+      game.setCoins(delta) #10 percent less
+      game.showPopupContent(UtilsAppfurnace.getPage("joker.STEAL_COINS.applyInfo")).done ($cont)->
+        UtilsAppfurnace.getUIElementByName("ui.label.howManyCoins",$cont).html(delta)
 
+    #@event
+    #@desct fires when an other team apply the joker
+    @onJokerCOIN_MULTI: (game,gamefield)->
+      console.log("JOKER TRIGGER2")
+      gamefield.setCoinPayments(gamefield.getCoinPayments() * 2)
+      intVal = window.setInterval(()->
+        gamefield.setCoinPayments(Math.floor(gamefield.getCoinPayments()/2))
+        game.showPopupContent(UtilsAppfurnace.getPage("joker.COIN_MULTI.applyInfo"))
+        window.clearInterval(intVal)
+      ,100000)
 
     #@method
     #@param: {Joker.jokerType} jokerType
-    @getImageNode:(jokerType, options = {width: 21,height:21})->
+    @getImageNode:(jokerType, options = {width: 70,height:70})->
       url = Joker.jokerImages[jokerType]
       if url == undefined
         throw new Error("We cant an image path to Joker.jokerTypes: "+jokerType)
@@ -84,9 +116,14 @@ define ['jquery',
     #@method
     #@public
     applyEffekt: (game)=>
-      game.channel.channel.trigger('client-joker-'+ @type, {joker: @})
-      game.showPopupContent(UtilsAppfurnace.getPage("Popup.JokerApplied"))
+      if @getType() == Joker.jokerTypes.COIN_MULTI
+        Joker.onJokerCOIN_MULTI(game,game.gamefield)
+      else
+        game.channel.channel.trigger('client-joker', {
+          joker: @
+          type: @getType()
 
+        })
 
     #@method
     #@public
@@ -96,7 +133,10 @@ define ['jquery',
     #@method
     #@returns: {JQuery.Element} The description page
     getDescription: ()=>
-      UtilsAppfurnace.getPage("Popup.Joker."+@getType()+".info")
+      $original = UtilsAppfurnace.getPage("Popup.Joker."+@getType()+".info")
+      $clone = $original.clone()
+      UtilsAppfurnace.storePage($original)
+      return $clone
     #@method
     #@return {jQury.Element} image node
     getImageNode: ()=> Joker.getImageNode(@getType())

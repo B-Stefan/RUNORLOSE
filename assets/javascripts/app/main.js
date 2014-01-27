@@ -13,8 +13,7 @@ requirejs.config({
         'css': '../vendor/require-css/css',
         'css-builder': '../vendor/require-css/css-builder',
         'normalize': '../vendor/require-css/normalize',
-        'moment': '../vendor/moment/moment',
-        'flipclock': '../vendor/flipclock/js/flipclock.min'
+        'moment': '../vendor/moment/moment'
     },
     shim: {
         'parse': {
@@ -29,9 +28,6 @@ requirejs.config({
         },
         'pusher': {
             exports: 'Pusher'
-        },
-        'flipclock': {
-            deps: ['css!../vendor/flipclock/css/flipclock.css']
         }
     }
 });
@@ -41,16 +37,24 @@ requirejs.config({
  */
 define(['require',
     'gameplay/Game',
+    'baseClasses/UtilsAppfurnace',
     'baseClasses/RealTimeCommunicationChannel',
-    'jquery-popup', 'jquery'], function (require, Game, RealTimeCommunicationChannel, unused, $) {
+    'jquery-popup', 'jquery'], function (require, Game,UtilsAppfurnace, RealTimeCommunicationChannel, unused, $) {
 
 
     //Bind click funtions to class 
     ui.map.karte1.showFunction(Game.onMapClick)
     ui.map.karte2.showFunction(Game.onMapClick)
 
+    //Bind click to image on home Page
+    /*$page = UtilsAppfurnace.getPage("Home")
+    UtilsAppfurnace.getUIElementByName("ui.image.Karte1",$page).click(function(){
+        navigate.to("Karte1")
+    })
+    UtilsAppfurnace.storePage($page)
+*/
     //>>excludeStart("build", true);
-    navigate.to("Karte1")
+    //navigate.to("Karte1")
     //>>excludeEnd("build");
 
 

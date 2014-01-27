@@ -30,9 +30,15 @@
       "jquery-popup",
       "jquery",
       "gameplay/Gamefield",
+      "gameplay/GameRecorder",
       "baseClasses/UtilsAppfurnace",
       "moment",
       "gameplay/Joker"
+    ],
+    "/javascripts/app/gameplay/GameRecorder.js": [
+      "require",
+      "baseClasses/RealTimeCommunicationChannel",
+      "gameplay/Game"
     ],
     "/javascripts/app/gameplay/Gamefield.js": [
       "require",
@@ -43,11 +49,13 @@
     ],
     "/javascripts/app/gameplay/Joker.js": [
       "jquery",
+      "moment",
       "baseClasses/UtilsAppfurnace"
     ],
     "/javascripts/app/main.js": [
       "require",
       "gameplay/Game",
+      "baseClasses/UtilsAppfurnace",
       "baseClasses/RealTimeCommunicationChannel",
       "jquery-popup",
       "jquery"

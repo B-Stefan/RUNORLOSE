@@ -4,9 +4,8 @@ define ['require','baseClasses/RealTimeCommunicationChannel'],
   #@desc Recorder game actions
   class GameRecorder
     @recordTypes:
-      POINT_COIN: 'POINT_COIN'
-      POINT_JOKER: 'POINT_JOKER'
-      APPLY_JOKER: 'APPLY_JOKER'
+      COIN: 'COIN'
+      TIME: 'TIME'
       POSITION: 'POSITION'
 
     #@constructor
@@ -29,13 +28,16 @@ define ['require','baseClasses/RealTimeCommunicationChannel'],
         if self.game.getState() == Game.gameStates.FINISHED
           clearInterval(interV)
         self.recordPosition()
-      ,10000)# Record position every 10 seconds
+      ,2500)# Record position every 2.5 seconds
+
+    #@method
     recordPosition: ()=>@recordGameEvent(GameRecorder.recordTypes.POSITION, af.locationSensor.getLastLocation())
+
     #@method
     recordGameEvent: (type, value)=>
       @trigger("record",
         type: type
         value: value
         LocalRemainingTime: @game.getRemainingTime()
-        gameId:@game.getId()
+        gameId:@channel.channel.members.me.id
       )

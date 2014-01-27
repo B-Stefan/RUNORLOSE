@@ -40,12 +40,22 @@ define ['require', 'baseClasses/RealTimeCommunicationChannel'
       #@desc: Contains all points for this gamefield
       @points = af.geoFeatures.getFeatures()
 
+
+      #@private
+      #@desc: The Coin payment per point
+      #@type int
+      @coinPayments = 2
+
       @pointsDisplayed = Array()
 
       #@type int
       #@desc: The round index for this game
       @numberOfPointsOnGamefield  = @getMaxRoundId()
       console.log("@numberOfPointsOnGamefield"+@numberOfPointsOnGamefield)
+
+      #Workarround because the btn not works in the app
+      @getBackButtonNode().click ()-> navigate.to("Home")
+      @getBackButtonNode().css("z-index",1200)
 
       #remove zone from list
       ###
@@ -61,7 +71,12 @@ define ['require', 'baseClasses/RealTimeCommunicationChannel'
     #@mehtod
     #@desc: Returns the payment in coins
     getCoinPayments: ()=>
-      return 2
+      return @coinPayments
+
+    #@mehtod
+    #@desc: Set the payment in coins
+    setCoinPayments: (newVal)=>
+      @coinPayments = newVal
 
     #@method
     #@desc: Retuns the round id form the last point
@@ -206,6 +221,6 @@ define ['require', 'baseClasses/RealTimeCommunicationChannel'
     getTimerNode: ()=>UtilsAppfurnace.getUIElementByName("ui.label.timer",UtilsAppfurnace.getPage(@name)).find(".vcenterable").first()
     getCoinNode: ()=> UtilsAppfurnace.getUIElementByName("ui.label.coins",UtilsAppfurnace.getPage(@name)).find(".vcenterable").first()
     getJokerNode: ()=> UtilsAppfurnace.getUIElementByName("ui.btn.currentJoker",UtilsAppfurnace.getPage(@name)).find(".label").first()
+    getBackButtonNode: ()=> UtilsAppfurnace.getUIElementByName("ui.btn.back",UtilsAppfurnace.getPage(@name)).find(".label").first()
 
-
-    getDefaultTime: ()=> 180000 #-> in ms <=> 3 min.
+    getDefaultTime: ()=> 10000000 #-> in ms <=> 3 min.

@@ -6,10 +6,10 @@ define ['require',
         'gameplay/GameRecorder'
         'baseClasses/UtilsAppfurnace',
         'moment',
-        'gameplay/Joker',
-        'flipclock'],
+        'gameplay/Joker'
+],
 
-(require,RealTimeCommunicationChannel, unused, $,Gamefield,GameRecorder,UtilsAppfurnace,moment,Joker,unused1)->
+(require,RealTimeCommunicationChannel, unused, $,Gamefield,GameRecorder,UtilsAppfurnace,moment,Joker)->
   #@class
   #@desc The main game class
   class Game
@@ -40,6 +40,7 @@ define ['require',
       Game.currentGame = new Game(this.name(), recorder: true)
       #Do something with the player
       console.log(['onMapShow',arguments, this.uid()])
+      window.game = Game.currentGame
 
     #@constructor
     #@param {string} the map id
@@ -73,6 +74,8 @@ define ['require',
       @playerCount = 0
       @name = mapId.replace(" ","");
 
+      @otherPlayer = []
+
       @gamefield = new Gamefield(@name)
       @gamefield.setZoneMoveIn(@onZoneMoveIn)
       @gamefield.setStartPointMoveIn(@onStartPointMoveIn)
@@ -96,17 +99,18 @@ define ['require',
         self.channel.channel.bind("client-startGame", self.onGameStart)
         self.channel.channel.bind("client-gameFinisched", self.onGameFinisched)
         #Bin Joker events
-        for key,value of Joker.jokerTypes
-          self.channel.channel.bind("client-joker-"+key, ()-> Joker['onJoker'+key](self,self.gamefield))
+        self.channel.channel.bind("client-joker", (data)-> Joker.onJokerEventTrigger(self,data))
 
-      #Add UI-Bindings
-      @gamefield.getJokerNode().click(@onCurrentJokerClick)
 
       #Check options
       if options.recorder == true
         @recorder = new GameRecorder(@)
       else
         @recorder = false
+
+    #@method
+    #@desc: Called if the game destroyed
+    destroy:()=> console.log(["Game destroyed", @])
 
     #@method
     #@public
@@ -124,7 +128,7 @@ define ['require',
     #@public
     #@param {int} new coin val
     #@desc Set the coin val
-    setConins: (newVal)=>
+    setCoins: (newVal)=>
       @coins = newVal
       @incrementCoins(0)
 
@@ -143,7 +147,9 @@ define ['require',
       timer   = window.setInterval(()->
         self.remainingTime = Math.floor(self.remainingTime) -  1000
         if self.remainingTime < 60000 and self.remainingTime >= 59000 #remainingTime is less than 1 minute (Range because the joker time steal effekt)
-          self.onLastBegun()
+          self.onLastMinuteBegun()
+        if self.remainingTime < 30000 and self.remainingTime >= 29000 #remainingTime is less than 1 minute (Range because the joker time steal effekt)
+          self.onLast30SecondsBegun()
         else if self.remainingTime <= 0
           clearInterval(timer)
           self.remainingTime = 0
@@ -157,9 +163,15 @@ define ['require',
     #@mehtod
     #@private
     #@desc Called when the last minute is reached
-    onLastBegun: ()=>
+    onLastMinuteBegun: ()=>
+
+    #@mehtod
+    #@private
+    #@desc Called when the last 30 seconds is reached
+    onLast30SecondsBegun: ()=>
       af.audioChannel.init(1)
       af.audioChannel.add(0, "sounds/24Effect.mp3")
+
     #@method
     #@priate
     #@parms {jQuery.Elememt | string} $el
@@ -184,8 +196,8 @@ define ['require',
             $btn = UtilsAppfurnace.getUIElementByName('ui.btn.Close'+i,$popContent)
           else
             break
-        $btn.click(()->
-          self.$popup.data('popup').close(@$popup)
+        $btn.find(".label").click(()->
+          self.closePopup()
         )
       @$popup.data('popup').o.afterClose = ()->
         if $popup.children().length > 0
@@ -193,6 +205,13 @@ define ['require',
 
       @$popup.data('popup').open($el)#Show popup
       return dfr.promise()
+
+
+    #@method
+    #@desc: Hide the popup
+    #@param: {$} [$el = @$popup]: The popup to close
+    closePopup:($el = @$popup)=>
+      @$popup.data("popup").close($el)
 
 
     #@mehtod
@@ -203,36 +222,16 @@ define ['require',
       #Check if point is visible, and game musst startet
       gameState = @getState()
       if point in @gamefield.getVisiblePoints() and (gameState == Game.gameStates.STARTED or gameState == Game.gameStates.WAITING_FOR_PLAYER)
-        @vibrate()
-        if type == Gamefield.pointTypes.COIN
-          #Recorder
-          if @recorder
-            @recorder.recordGameEvent(GameRecorder.recordTypes.POINT_COIN, point.getName())
 
+        @vibrate()
+        #Type switch
+        if type == Gamefield.pointTypes.COIN
           @incrementCoins(@gamefield.getCoinPayments())
           @onCoinPointMoveIn()
         else if type == Gamefield.pointTypes.JOKER
-          #Recorder
-          if @recorder
-            @recorder.recordGameEvent(GameRecorder.recordTypes.POINT_JOKER, point.getName())
-
           @onJokerPointMoveIn()
         else
           throw new Error("Underknow point Type")
-
-    #@method:
-    #@desc: Fires when the user tap the ui.btn.currentJoker (right top corner)
-    onCurrentJokerClick: ()=>
-      self = @
-      if @currentJoker == null
-        @showPopupContent(UtilsAppfurnace.getPage("Popup.onCurrentJokerClickNoJoker"))
-      else
-        @showPopupContent(UtilsAppfurnace.getPage("Popup.onCurrentJokerClick")).done ($content)->
-          UtilsAppfurnace.getUIElementByName("ui.label.jokerDescription",$content).html(self.currentJoker.getDescription())
-          UtilsAppfurnace.getUIElementByName("ui.btn.jokerApply",$content).click(()-> self.currentJoker.applyEffekt(self))
-
-
-
 
     #@method
     #@priate
@@ -240,48 +239,78 @@ define ['require',
     #@param: {int} increment
     incrementCoins: (increment)=>
       @coins += increment
-      @gamefield.getCoinNode().html("Powerreigel: "+@coins)
+      if @recorder
+        @recorder.recordGameEvent(GameRecorder.recordTypes.COIN,
+          coinVal: @coins)
+      @gamefield.getCoinNode().html("Powerriegel: "+@coins)
 
     #@method
     #@priate
     #@desc: Fires when the user reach a coin point
     onCoinPointMoveIn: ()=>
+      self = @
       @gamefield.displayNextRound()
-      @showPopupContent(UtilsAppfurnace.getPage("Popup.onCoinPointMoveIn"))
+      @showPopupContent(UtilsAppfurnace.getPage("Popup.onCoinPointMoveIn")).done ($content)->
+        #Display the current coin payment
+        UtilsAppfurnace.getUIElementByName("ui.label.PointMoveIn.howMany",$content).text(self.gamefield.getCoinPayments())
+
+
 
     #@method
     #@priate
     #@desc: Fires when the user reach a joker point
     onJokerPointMoveIn: ()=>
-      $currentJoker = @gamefield.getJokerNode()
-      newJoker = Joker.getRandomJoker()
-      @showPopupContent(UtilsAppfurnace.getPage("Popup.onJokerPointMoveIn"))
+      self = @
+      @showPopupContent(UtilsAppfurnace.getPage("Popup.onJokerPointMoveIn")).done ($content)->
+        $node = UtilsAppfurnace.getUIElementByName("ui.label.jokerNode",$content)
+        $annimationNode = $("<div></div>")
 
-      #Annimate all joker types
-      i = 0
-      #@desc: Helper Function, annimates all joker types
-      annimateAllJokerTypes = ($node)->
-        dfr = $.Deferred()
-        Joker.animateImgageNode($node,Joker.jokerTypes.STEAL_COINS).done ()->
-            Joker.animateImgageNode($node,Joker.jokerTypes.STEAL_TIME).done ()->
-              if i != 2
-                annimateAllJokerTypes($node)
-              else
-                dfr.resolve()#all annimations done
-              i+=1
-        return dfr.promise()
+        $node.css("background-color", '#3e8e8e')
+        $node.css("border-color", 'black')
+        $node.css("padding", '10px')
+        $node.html("")
+        $node.append($annimationNode)
 
-      #start annimation
-      annimateAllJokerTypes($currentJoker).done ()->
-        Joker.animateImgageNode($currentJoker,newJoker.getType())#set the random joker
 
-      @currentJoker = newJoker
+
+        #Annimate all joker types
+        i = 0
+        #@desc: Helper Function, annimates all joker types
+        dfrGlobal = $.Deferred()#Set global because some errors by call recusive the same function. I guess some local scope override of the dfr var
+        annimateAllJokerTypes = ($nodeToAnnimate)->
+          dfr = $.Deferred()
+          Joker.animateImgageNode($nodeToAnnimate,Joker.jokerTypes.COIN_MULTI).done ()->
+            Joker.animateImgageNode($nodeToAnnimate,Joker.jokerTypes.STEAL_COINS).done ()->
+                Joker.animateImgageNode($nodeToAnnimate,Joker.jokerTypes.STEAL_TIME).done ()->
+                  if i != 2
+                    annimateAllJokerTypes($nodeToAnnimate).done ()->
+                      dfrGlobal.resolve()
+                  else
+                    dfr.resolve()#all annimations done
+                  i+=1
+          return dfr.promise()
+
+        #start annimation
+        annimateAllJokerTypes($annimationNode)
+
+        dfrGlobal.done ()->
+          newJoker = Joker.getRandomJoker()
+
+          Joker.animateImgageNode($annimationNode,newJoker.getType()).done ()->
+            $jokerDescription = UtilsAppfurnace.getUIElementByName("ui.label.jokerDescription",$content)
+            $jokerDescription.html(newJoker.getDescription())
+            newJoker.applyEffekt(self)
+
+
+
 
     #@method
     #@priate
     #@desc: Fires if timer  == 0
     onTimerEnd: ()=>
+
       @setState(Game.gameStates.TIMER_END)
+      af.audioChannel.clear(0) #Stop sound
       @gamefield.hidePoints(@gamefield.getVisiblePoints())#Hide current points
       @gamefield.displayPoint(@gamefield.getStartPoint()) #show start point
       @showPopupContent(UtilsAppfurnace.getPage("Popup.onTimerEnd"))
@@ -289,26 +318,30 @@ define ['require',
     #@method
     #@private
     #@event
-    onPlayerJoin: ()=>
+    onPlayerJoin: (player)=>
       @playerCount += 1
       popup("Ein Spieler hat das Spielfeld betreten")
 
     #@method
     #@private
     #@event
-    onPlayerLeft: ()=>
+    onPlayerLeft: (player)=>
       @playerCount -= 1
+
       popup("Ein Spieler hat das Spielfeld verlassen")
+
 
     #@method
     #@private
     #@event
     onGameStart: ()=>
+      self = @
       @setState(Game.gameStates.STARTED)
-      @startTimer()
-      @incrementCoins(0)#Update UI-Only
-      @gamefield.displayNextRound()
-      @showPopupContent(UtilsAppfurnace.getPage("Popup.onGameStart"))
+      @startCountdown().done ()->
+        self.startTimer()
+        self.incrementCoins(0)#Update UI-Only
+        self.gamefield.displayNextRound()
+        #self.showPopupContent(UtilsAppfurnace.getPage("Popup.onGameStart"))
 
     #@method
     #@private
@@ -348,33 +381,15 @@ define ['require',
         @setState(Game.gameStates.ON_STARTPOINT)
         @showPopupContent(UtilsAppfurnace.getPage('Popup.onStartPointMoveIn')).done ($popupContent) ->
           $btn = UtilsAppfurnace.getUIElementByName('ui.btn.GameStart',$popupContent)#Use the popup content to search
-          $btn.click(()->
-            af.audioChannel.init(1)
-            af.audioChannel.add(0, "sounds/startCountdown.mp3")
-
-            $clock = $('<div style="align: center"></div>')
-            $popupContent.find(".popup").html("")
-            $popupContent.find(".popup").append($clock)
-            clock  =  new FlipClock($clock,10,
-              clockFace: 'Counter'
-              countdown: true
-            )
-            self.$popup.data("popup").center()
-
-            setTimeout ->
-              int = setInterval (->
-                if clock.getTime().time == 1
-                  clearInterval(int)
-                  self.$popup.data("popup").close()
-                  self.startGame()
-                else
-                  clock.setTime(clock.getTime().time-1)
-              ), 1000
+          $btn.click ()-> self.startGame()
 
 
-          )
+
+
+
       #Game end message
       else if state == Game.gameStates.TIMER_END
+        @incrementCoins(@gamefield.getCoinPayments())#First player gets the last Powerriegel
         @channel.channel.trigger('client-gameFinisched',data: '')
         @onGameFinisched()
 
@@ -397,6 +412,54 @@ define ['require',
     #@return {Game.GameStates} @gameState
     getState: () =>@gameState
 
+    #@method
+    #@private
+    #@desc Count from ten back and display an annimation
+    #@returns promise
+
+    startCountdown:()=>
+      self = @
+      dfr = $.Deferred()
+      af.audioChannel.init(1)
+      af.audioChannel.add(0, "sounds/startCountdown.mp3")
+
+      $countdown = $('<div style="text-align: center; vertical-align: middle; display: table-cell; width: 200px; height: 200px"></div>')
+      @showPopupContent($("<div></div>")).done ($popup)->
+        $content = $popup.find(".popup_content")
+        $countdown = $('<div style="text-align: center; vertical-align: middle; display: table-cell"></div>')
+        $countdown.width($content.width())
+        $countdown.height($content.height())
+        $content.append($countdown)
+        self.$popup.data("popup").center()
+
+        #ten seconds timer
+        i = 10
+        int = setInterval( () ->
+          if i ==-1
+            clearInterval(int)
+            self.closePopup()
+            dfr.resolve()
+            return
+          $countdown.css('opacity', 0.25);
+          $countdown.css('font-size', '2em');
+
+          if i == 0
+            $countdown.text("GO!")
+            $countdown.css('opacity', 1);
+          else
+            $countdown.text(i);
+
+          $countdown.animate(
+            {
+              opacity: 1,
+              fontSize: '6em'
+            },
+            800)
+          i--
+
+        , 890)
+
+      return dfr.promise()
     #@method
     #@public
     #@desc called on start of the Game
