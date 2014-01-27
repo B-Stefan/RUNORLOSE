@@ -45,7 +45,7 @@ define ['jquery',
     @onJokerSTEAL_COINS: (game,gamefield)->
       console.log("onJokerSTEAL_COINS")
       facator = 0.9
-      delta = game.getCoins()*facator
+      delta = Math.floor(game.getCoins()*facator)
       game.setCoins(delta) #10 percent less
       game.showPopupContent(UtilsAppfurnace.getPage("joker.STEAL_COINS.applyInfo")).done ($cont)->
         UtilsAppfurnace.getUIElementByName("ui.label.howManyCoins",$cont).html(delta)
