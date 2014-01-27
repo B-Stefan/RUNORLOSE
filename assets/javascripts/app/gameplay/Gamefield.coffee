@@ -223,4 +223,4 @@ define ['require', 'baseClasses/RealTimeCommunicationChannel'
     getJokerNode: ()=> UtilsAppfurnace.getUIElementByName("ui.btn.currentJoker",UtilsAppfurnace.getPage(@name)).find(".label").first()
     getBackButtonNode: ()=> UtilsAppfurnace.getUIElementByName("ui.btn.back",UtilsAppfurnace.getPage(@name)).find(".label").first()
 
-    getDefaultTime: ()=> 10000000 #-> in ms <=> 3 min.
+    getDefaultTime: ()=> 600000 #-> in ms <=> 10 min.
