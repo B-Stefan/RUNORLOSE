@@ -8,7 +8,7 @@ This repository contains a simple run game based on appfurnace platform
 3. Clone this repository on your disk
 
 
-#Start development
+# Start development
  1. Switch with your command line tool (CMD) into your project folder
  2. Use `make start` to start up an asset server and begin coding immediately.
  3. Create your application on the Appfurance Website
@@ -44,7 +44,7 @@ This repository contains a simple run game based on appfurnace platform
     */
 ```
 
-#Build your application
+# Build your application
  1. Use `make pack` to create your optimized application. The deployable source will be output to 'public/app/main-built.js' folder.
  2. Open your public/app/main-built.js file and replace "http://localhost:3000/" with none
  3. Upload your public/app/main-built.js and maybe some other Data
